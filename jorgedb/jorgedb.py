@@ -40,15 +40,14 @@ class JorgeDB:
                     break
                 block_size = int(block_size)
                 key = header.read(self._ksize)
-                self._map[key] = block_pointer
+                self._map[key] = (block_pointer, block_size)
                 block_pointer += block_size
 
-    def _get_block(self, pointer):
+    def _get_block(self, key):
+        pointer, size = self._map[key]
         with open(self._blocks, 'r') as f:
             f.seek(pointer)
-            block_size = int(f.read(self._bsize))
-            f.seek(f.tell() + self._ksize)
-            block_string = f.read(block_size)
+            block_string = f.read(size)
         return json.loads(block_string)
 
     def _format_data_to_save(self, key, block):
@@ -76,13 +75,10 @@ class JorgeDB:
         self._set(key, block)
 
     def __getitem__(self, key):
-        try:
-            position = self._map[key]
-        except KeyError:
-            raise KeyError(
-                'Jorge located at "{}" does not know key "{}".'.format(
-                    self._path, key))
-        return self._get_block(position)
+        if key in self._map:
+            return self._get_block(key)
+        raise KeyError(
+            'Jorge located at "{}" does not know key "{}".'.format(self._path, key))
 
     def __str__(self):
         db_block_count = len(self._map)

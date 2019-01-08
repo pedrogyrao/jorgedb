@@ -80,12 +80,22 @@ class JorgeDB:
         raise KeyError(
             'Jorge located at "{}" does not know key "{}".'.format(self._path, key))
 
-    def __str__(self):
-        db_block_count = len(self._map)
-        db_memory_allocated = getsizeof(self._map) / float(1 << 20)
+    def _estimate_mem_consumption(self):
+        map_len = len(self._map)
+        map_size = getsizeof(self._map)
+        key_size = self._ksize + getsizeof(str())
+        tuple_size = getsizeof(tuple()) + 2 * (getsizeof(int()) + 8)
+        return map_len * (key_size + tuple_size) + map_size
+
+    def _estimate_disck_consumption(self):
         db_filesize = os.stat(self._header).st_size
         db_filesize += os.stat(self._blocks).st_size
-        db_filesize /= float(1 << 20)
+        return db_filesize
+
+    def __str__(self):
+        db_block_count = len(self._map)
+        db_memory_allocated = self._estimate_mem_consumption() / float(1 << 20)
+        db_filesize = self._estimate_disck_consumption() / float(1 << 20)
 
         message = ['Jorge located at "{}":'.format(self._path)]
         message.append('Block count: {}'.format(db_block_count))

@@ -51,7 +51,7 @@ class JorgeDB:
         return json.loads(block_string)
 
     def _format_data_to_save(self, key, block):
-        block = json.dumps(block)
+        block = json.dumps(block).replace(': ', ':').replace(', ', ',')
         block_size = append_spaces(len(block), self._bsize)
         key = append_spaces(key, self._ksize)
         return block_size + key, block

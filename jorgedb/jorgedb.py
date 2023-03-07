@@ -6,6 +6,11 @@ from collections import namedtuple
 # from jorgedb import DEFAULT_PATH
 
 
+def clean_data(data):
+    #todo: clean data
+    return data
+
+
 def append_spaces(string, size):
     return ('{:>'+ str(size) +'}').format(string)
 
